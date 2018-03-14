@@ -8,9 +8,12 @@ project(rl)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  std_msgs
   geometry_msgs
   roscpp
   rospy
+  sensor_msgs
+  hector_uav_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -105,7 +108,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
     INCLUDE_DIRS
     LIBRARIES
-    CATKIN_DEPENDS roscpp geometry_msgs
+    CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs hector_uav_msgs
     DEPENDS
 )
 

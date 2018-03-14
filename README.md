@@ -20,3 +20,6 @@ roslaunch hector_quadrotor_demo outdoor_flight_gazebo.launch
 roslaunch pr2_teleop teleop_keyboard.launch
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 
+5. Execute the python publisher:
+chmod +x pub.py (only the first time in the same folder as pub.py)
+python pub.py

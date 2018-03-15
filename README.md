@@ -23,3 +23,7 @@ rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 5. Execute the python publisher:
 chmod +x pub.py (only the first time in the same folder as pub.py)
 python pub.py
+
+If running the above script in a tensorflow virtual environment, might need to do:
+pip install rospkg catkin_pkg
+

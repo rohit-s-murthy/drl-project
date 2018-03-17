@@ -3,13 +3,15 @@
 import rospy
 from hector_uav_msgs.msg import Altimeter
 from std_msgs.msg import Header
-from geometry_msgs.msg import Twist, Quaternion, Point, Pose, Vector3, PoseStamped, PoseWithCovarianceStamped
+from geometry_msgs.msg import Twist, Quaternion, Point, Pose, Vector3, Vector3Stamped, PoseStamped, PoseWithCovarianceStamped
 from sensor_msgs.msg import Imu, Range, Image
 from hector_uav_msgs.msg import Altimeter
 import message_filters
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+import keras
+import gazeboInterface as gazebo
 
 def imu_callback(data):
     

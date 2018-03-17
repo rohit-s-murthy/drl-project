@@ -28,4 +28,4 @@ If running the above script in a tensorflow virtual environment, might need to d
 pip install rospkg catkin_pkg
 
 HACK: Change the outdoor_flight_gazebo.launch file to include an argument as follows:
-<arg name="z" value="5.0"/>
+arg name="z" value="5.0"/ 

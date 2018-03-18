@@ -1,4 +1,5 @@
 import environment 
+
 import numpy as np
 import random
 import argparse
@@ -7,6 +8,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
 import tensorflow as tf
+
 import json
 import pdb
 
@@ -17,6 +19,7 @@ import timeit
 
 
 class OU(object):
+
     def function(self, x, mu, theta, sigma=0.3):
         return theta * (mu - x) + sigma * np.random.randn(1)
 
@@ -142,15 +145,3 @@ def play_game(train_indicator = 1):
 
 if __name__ == "__main__":
     play_game()
-
-
-
-
-
-
-
-
-
-
-
-

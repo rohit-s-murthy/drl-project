@@ -3,7 +3,7 @@
 import rospy
 from std_srvs.srv import Empty
 
-class GazeboConnection():
+class GazeboInterface():
     
     def __init__(self):
         

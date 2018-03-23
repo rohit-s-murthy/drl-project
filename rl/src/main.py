@@ -1,7 +1,6 @@
 import environment
 import rospy
 import time
-
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -12,7 +11,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.optimizers import Adam
 import tensorflow as tf
-# from keras.engine.training import collect_trainable_weights
+
 import json
 import pdb
 
@@ -26,13 +25,13 @@ class OU(object):
 
 
 def play_game(train_indicator = 1):
-    # env = gym.make("Pendulum-v0")
-    env = environment.Environment()
+
+    env = environment.Environment()  # Rohit's custom environment
+
     obs_dim = env.num_states
     act_dim = env.num_actions
 
     buffer_size = 5000
-
     batch_size = 32
     gamma = 0.95
     tau = 0.001
@@ -172,15 +171,3 @@ def play_game(train_indicator = 1):
 if __name__ == "__main__":
     rospy.init_node('quad', anonymous=True)
     play_game()
-
-
-
-
-
-
-
-
-
-
-
-

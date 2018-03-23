@@ -33,6 +33,7 @@ class Environment():
         self.num_actions = 3
 
         # self.plotState = np.zeros((self.num_states,))
+
         # imu_sub = message_filters.Subscriber("/raw_imu", Imu)
         # pose_sub = message_filters.Subscriber("/ground_truth_to_tf/pose", PoseStamped)
         # vel_sub = message_filters.Subscriber("/fix_velocity", Vector3Stamped)

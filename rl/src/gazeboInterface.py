@@ -26,8 +26,10 @@ class GazeboInterface():
             print ("/gazebo/unpause_physics service call failed")
         
     def resetSim(self):
+        rospy.wait_for_service('/gazebo/reset_world')
         rospy.wait_for_service('/gazebo/reset_simulation')
         try:
             self.reset_proxy()
         except rospy.ServiceException as e:
             print ("/gazebo/reset_simulation service call failed")
+

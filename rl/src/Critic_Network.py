@@ -17,8 +17,8 @@ class Critic_Network(object):
 		self.env = env
 		self.sess = sess
 		self.bs = batch_size
-		self.obs_dim = self.env.observation_space.shape[0]
-		self.act_dim = self.env.action_space.shape[0]
+		self.obs_dim = self.env.num_states
+		self.act_dim = self.env.num_actions
 
 		# hyperparameters
 		self.lr = learning_rate

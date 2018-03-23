@@ -20,9 +20,9 @@ class Replay_Buffer(object):
 		batch = []
 
 		if len(self.buffer) < self.batch_size:
-			batch = random.sample(self.buffer, len(self.buffer))
+			batch = random.sample(list(self.buffer), len(self.buffer))
 		else:
-			batch = random.sample(self.buffer, self.batch_size)
+			batch = random.sample(list(self.buffer), self.batch_size)
 
 		return batch
 

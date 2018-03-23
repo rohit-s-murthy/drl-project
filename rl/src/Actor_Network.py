@@ -15,8 +15,8 @@ class Actor_Network(object):
 	def __init__(self, env, sess, batch_size=32, tau=0.125, learning_rate=0.0001):
 		self.env = env
 		self.sess = sess
-		self.obs_dim = self.env.observation_space.shape[0]
-		self.act_dim = self.env.action_space.shape[0]
+		self.obs_dim = self.env.num_states
+		self.act_dim = self.env.num_actions
 
 		# hyperparameters
 		self.lr = learning_rate

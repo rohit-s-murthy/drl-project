@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   hector_uav_msgs
   message_filters
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -109,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
     INCLUDE_DIRS
     LIBRARIES
-    CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs hector_uav_msgs message_filters
+    CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs hector_uav_msgs message_filters tf
     DEPENDS
 )
 

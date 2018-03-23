@@ -26,6 +26,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>hector_uav_msgs</run_depend>
   <run_depend>python-tensorflow-pip</run_depend>
+  <run_depend>message_filters</run_depend>
 
 <!--  <run_depend>hector_quadrotor_gazebo</run_depend>
   <run_depend>hector_gazebo_worlds</run_depend>

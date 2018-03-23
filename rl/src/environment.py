@@ -4,7 +4,8 @@ from hector_uav_msgs.msg import Altimeter
 from std_msgs.msg import Header
 from geometry_msgs.msg import Twist, Quaternion, Point, Pose, Vector3, Vector3Stamped, PoseStamped, PoseWithCovarianceStamped
 from sensor_msgs.msg import Imu, Range, Image
-from hector_uav_msgs.msg import Altimeter
+from hector_uav_msgs.msg import Altimeter, MotorStatus
+from nav_msgs.msg import Odometry
 import message_filters
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +13,7 @@ import gazeboInterface as gazebo
 import time
 import random
 import math
+import pdb
 
 class Environment():
 
@@ -19,13 +21,18 @@ class Environment():
 
         self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         self.gazebo = gazebo.GazeboInterface()
-        self.running_step = 0.3  # Convert to ros param
+        self.running_step = 0.05  # Convert to ros param
         self.max_incl = np.pi/2
-        self.max_altitude = 50.0
+        self.max_altitude = 5.0
+        self.min_altitude = 0.5
         self.vel_min = -2.0
         self.vel_max = 2.0
         self.goalPos = [0.0, -5.0, 2.0]
 
+        self.num_states = 3
+        self.num_actions = 3
+
+        # self.plotState = np.zeros((self.num_states,))
         # imu_sub = message_filters.Subscriber("/raw_imu", Imu)
         # pose_sub = message_filters.Subscriber("/ground_truth_to_tf/pose", PoseStamped)
         # vel_sub = message_filters.Subscriber("/fix_velocity", Vector3Stamped)
@@ -46,18 +53,17 @@ class Environment():
         vel.linear.x = action[0]
         vel.linear.y = action[1]
         vel.linear.z = action[2]
-
+        print('vel_x: {}, vel_y: {}, vel_z: {}'.format(vel.linear.x, vel.linear.y, vel.linear.z))
         self.gazebo.unpauseSim()
         self.pub.publish(vel)
         time.sleep(self.running_step)
-        poseData, imuData, velData = self.takeObservation()
+        poseData, imuData, velData, motorData = self.takeObservation()
         self.gazebo.pauseSim()
 
-        pose_ = poseData.pose
-        reward, isTerminal = self.processData(pose_, imuData, velData)
-
+        pose_ = poseData.pose.pose
+        reward, isTerminal = self.processData(pose_, imuData, velData, motorData)
         nextState = [pose_.position.x, pose_.position.y, pose_.position.z]
-
+        self.plotState = np.vstack((self.plotState, np.asarray(nextState)))
         return nextState, reward, isTerminal, []
 
     def _reset(self):
@@ -73,13 +79,13 @@ class Environment():
 
             # 4th: Get init state
             # TODO: Should initial state have some randomness?
-            initStateData, _, _ = self.takeObservation()
+            initStateData, _, _, _ = self.takeObservation()
 
-            initState = [initStateData.pose.position.x, initStateData.pose.position.y, initStateData.pose.position.z]
-
+            initState = [initStateData.pose.pose.position.x, initStateData.pose.pose.position.y, initStateData.pose.pose.position.z]
+            self.plotState = np.asarray(initState)
             # 5th: pauses simulation
             self.gazebo.pauseSim()
-            
+
             return initState
 
     def _sample(self):
@@ -96,7 +102,8 @@ class Environment():
         poseData = None
         while poseData is None:
           try:
-              poseData = rospy.wait_for_message('/ground_truth_to_tf/pose', PoseStamped, timeout=5)
+              # poseData = rospy.wait_for_message('/ground_truth_to_tf/pose', PoseStamped, timeout=5)
+              poseData = rospy.wait_for_message('/ground_truth/state', Odometry, timeout=5)
           except:
               rospy.loginfo("Current drone pose not ready yet, retrying to get robot pose")
 
@@ -113,12 +120,20 @@ class Environment():
               imuData = rospy.wait_for_message('/raw_imu', Imu, timeout=5)
           except:
               rospy.loginfo("Current drone imu not ready yet, retrying to get robot imu")
+
+        motorData = None
+        while motorData is None:
+          try:
+              motorData = rospy.wait_for_message('/motor_status', MotorStatus, timeout=5)
+          except:
+              rospy.loginfo("Current drone motor status not ready yet, retrying to get robot motor status")
         
-        return poseData, imuData, velData
+        return poseData, imuData, velData, motorData
 
     def _distance(self, pose):
 
         currentPos = [pose.position.x, pose.position.y, pose.position.z]
+        print('currentPos: {}'.format(currentPos))
         dist = np.linalg.norm(np.subtract(currentPos, self.goalPos))
         return dist
     
@@ -129,12 +144,13 @@ class Environment():
         reward = 0
 
         error = self._distance(poseData)
+        print('error: {}'.format(error))
         reward += -error
 
         angletoGoal = np.arctan2(np.abs(poseData.position.y - self.goalPos[1]), np.abs(poseData.position.x - self.goalPos[2]))
         currentAngle = np.arctan2(velData.vector.y, velData.vector.x)
 
-        # Debug print statements
+        # DEBUG print statements
         # print('arctan2({},{}), arctan2({},{})'.format(np.abs(poseData.position.y - self.goalPos[1]), np.abs(poseData.position.x - self.goalPos[2]), velData.vector.y, velData.vector.x))
         # print('angletoGoal: {}, currentAngle: {}'.format(angletoGoal, currentAngle))
 
@@ -163,7 +179,7 @@ class Environment():
         
         return X, Y, Z
 
-    def processData(self, poseData, imuData, velData):
+    def processData(self, poseData, imuData, velData, motorData):
 
         done = False
         
@@ -176,9 +192,9 @@ class Environment():
 
         pitch_bad = not(-self.max_incl < pitch < self.max_incl)
         roll_bad = not(-self.max_incl < roll < self.max_incl)
-        altitude_bad = poseData.position.z > self.max_altitude
-
-        if altitude_bad or pitch_bad or roll_bad:
+        altitude_bad = poseData.position.z > self.max_altitude or poseData.position.z < self.min_altitude
+        print('motorData.on: {}'.format(motorData.on))
+        if altitude_bad or pitch_bad or roll_bad or motorData.on:
             rospy.loginfo ("(Terminating Episode: Unstable quad) >>> ("+str(altitude_bad)+","+str(pitch_bad)+","+str(roll_bad)+")")
             done = True
             reward = -200  # TODO: Scale this down?
@@ -189,18 +205,18 @@ class Environment():
 
     def takeoff(self):
 
-        rate = rospy.Rate(10)
+        # rate = rospy.Rate(10)
         count = 0
         msg = Twist()
 
         # while not rospy.is_shutdown():
-        while count < 10:
+        while count < 2:
             msg.linear.z = 0.5
             # rospy.loginfo('Lift off')
 
             self.pub.publish(msg)
             count = count + 1
-            rate.sleep()
+            time.sleep(1.0)
 
         msg.linear.z = 0.0
         self.pub.publish(msg)
